@@ -1,0 +1,25 @@
+.pixel-box {
+    display: inline-block;
+    background-color: black;
+
+    &.visited {
+        background-color: lightgray;
+    }
+
+    &.top-wall {
+        border-top: 2px solid black;
+    }
+
+    &.right-wall {
+        border-right: 2px solid black;
+    }
+    &.bottom-wall {
+        border-bottom: 2px solid black;
+    }
+    &.left-wall {
+        border-left: 2px solid black;
+    }
+    &.is-path {
+        background-color: blue !important;
+    }
+}
