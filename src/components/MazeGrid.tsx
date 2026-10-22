@@ -2,8 +2,13 @@ import { createEffect, createSignal } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { SearchResult } from "../lib/bfs";
 import type { Maze } from "../lib/maze";
-import { cellPixelSize, paintMaze } from "../lib/paint";
+import { cellPixelSize, changedCells, deviceScale, paintCells, paintMaze } from "../lib/paint";
 import "./MazeGrid.css";
+
+function context2d(element: HTMLCanvasElement): CanvasRenderingContext2D | null {
+  if (typeof navigator !== "undefined" && /jsdom/i.test(navigator.userAgent)) return null;
+  return element.getContext("2d", { alpha: false });
+}
 
 export function MazeGrid(props: {
   maze: Accessor<Maze>;
@@ -12,36 +17,68 @@ export function MazeGrid(props: {
   pathCount: Accessor<number>;
 }) {
   const [canvas, setCanvas] = createSignal<HTMLCanvasElement>();
-  let pixels: Uint8ClampedArray | undefined;
-  let bufferKey = "";
+  let image: ImageData | undefined;
+  let paintedMaze: Maze | undefined;
+  let paintedSearch: SearchResult | null = null;
+  let paintedStep = -1;
   let canvasSupported = true;
 
   createEffect(() => {
-    const el = canvas();
-    if (!el) return;
+    const element = canvas();
+    if (!element) return;
     const maze = props.maze();
     const search = props.search();
     const stepIndex = props.stepIndex();
-    const cell = cellPixelSize(Math.max(maze.width, maze.height));
+    const cssCell = cellPixelSize(Math.max(maze.width, maze.height));
+    const scale = deviceScale(window.devicePixelRatio);
+    const cell = cssCell * scale;
     const width = maze.width * cell;
     const height = maze.height * cell;
-    const key = `${width}x${height}`;
-    if (!pixels || bufferKey !== key) {
-      pixels = new Uint8ClampedArray(width * height * 4);
-      bufferKey = key;
-    }
-    paintMaze(pixels, maze, search, stepIndex, cell);
-    if (el.width !== width) el.width = width;
-    if (el.height !== height) el.height = height;
+    element.style.setProperty("--maze-css-width", `${maze.width * cssCell}px`);
+    if (element.width !== width) element.width = width;
+    if (element.height !== height) element.height = height;
     if (!canvasSupported) return;
-    const context = el.getContext("2d", { alpha: false });
+    const context = context2d(element);
     if (!context) {
       canvasSupported = false;
       return;
     }
-    const image = context.createImageData(width, height);
-    image.data.set(pixels);
-    context.putImageData(image, 0, 0);
+
+    if (!image || image.width !== width || image.height !== height) {
+      image = context.createImageData(width, height);
+      paintedMaze = undefined;
+      paintedSearch = null;
+      paintedStep = -1;
+    }
+
+    const index = search ? Math.min(Math.max(stepIndex, 0), search.steps.length - 1) : -1;
+    const pixels = image.data;
+    const forward =
+      search !== null &&
+      paintedMaze === maze &&
+      paintedSearch === search &&
+      paintedStep >= 0 &&
+      index > paintedStep;
+
+    if (forward) {
+      const dirty = paintCells(
+        pixels,
+        maze,
+        search,
+        index,
+        cell,
+        changedCells(search, paintedStep, index),
+        scale,
+      );
+      if (dirty) context.putImageData(image, 0, 0, dirty.x, dirty.y, dirty.width, dirty.height);
+    } else {
+      paintMaze(pixels, maze, search, Math.max(index, 0), cell, scale);
+      context.putImageData(image, 0, 0);
+    }
+
+    paintedMaze = maze;
+    paintedSearch = search;
+    paintedStep = index;
   });
 
   return (

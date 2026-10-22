@@ -73,6 +73,21 @@ export function formatQueue(cells: readonly number[], total: number, width: numb
   return `${shown.join(", ")}.`;
 }
 
+/** The first cells still in the queue. Visits consume the queue in enqueue order. */
+export function queueCells(
+  result: SearchResult,
+  visited: number,
+  queued: number,
+  limit = QUEUE_PREVIEW,
+): number[] {
+  const start = Math.max(0, visited);
+  const available = Math.max(0, Math.min(queued, result.enqueuedOrder.length - start));
+  const count = Math.min(limit, available);
+  const cells: number[] = [];
+  for (let index = 0; index < count; index += 1) cells.push(result.enqueuedOrder[start + index]);
+  return cells;
+}
+
 export function countVisited(result: SearchResult, stepIndex: number): number {
   let count = 0;
   for (let i = 0; i < result.visitedAt.length; i += 1) {

@@ -18,8 +18,8 @@ You can also run `npm start`.
 
 ## Use the program
 
-1. Choose a size: 30×30, 100×100, or 300×300. The program builds a new maze.
-2. Choose a speed. Slow is the default. On a 30×30 maze, Slow moves one step at a time.
+1. Choose a size: 30×30, 50×50, or 100×100. The program builds a new maze.
+2. Choose a speed. Slow is the default. On a 30×30 maze and a 50×50 maze, Slow moves one step at a time. On a 100×100 maze, Slow moves a short batch of steps.
 3. Click Play. The search starts.
 4. Read the step view under the maze. The view shows the step number, a description, the queue, and the visited-cell count.
 5. Click Pause to stop the timer. Click Step to move one step. Click Resume to continue.

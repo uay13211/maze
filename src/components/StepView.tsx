@@ -1,15 +1,9 @@
 import { For, Show, createMemo } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { SearchResult } from "../lib/bfs";
-import {
-  countVisited,
-  describeStep,
-  distanceAtStep,
-  formatCount,
-  formatQueue,
-  queueSnapshot,
-} from "../lib/describe";
+import { describeStep, formatCount, formatQueue, queueCells } from "../lib/describe";
 import type { Maze } from "../lib/maze";
+import type { StepTotals } from "../lib/totals";
 import "./StepView.css";
 
 export const LOG_LIMIT = 12;
@@ -18,6 +12,7 @@ export function StepView(props: {
   maze: Accessor<Maze>;
   search: Accessor<SearchResult | null>;
   stepIndex: Accessor<number>;
+  totals: Accessor<StepTotals>;
   announce: Accessor<boolean>;
 }) {
   const view = createMemo(() => {
@@ -39,8 +34,8 @@ export function StepView(props: {
 
     const index = Math.min(Math.max(props.stepIndex(), 0), result.steps.length - 1);
     const step = result.steps[index];
-    const snapshot = queueSnapshot(result, index);
-    const distance = distanceAtStep(result.steps, index) ?? 0;
+    const totals = props.totals();
+    const cells = queueCells(result, totals.visited, totals.queued);
     const logStart = Math.max(0, index - (LOG_LIMIT - 1));
     const log: { key: string; text: string }[] = [];
     for (let i = index; i >= logStart; i -= 1) {
@@ -52,10 +47,10 @@ export function StepView(props: {
       current: index + 1,
       total: result.steps.length,
       description: describeStep(step, width),
-      queue: formatQueue(snapshot.cells, snapshot.total, width),
-      visited: countVisited(result, index),
-      queued: snapshot.total,
-      distance,
+      queue: formatQueue(cells, totals.queued, width),
+      visited: totals.visited,
+      queued: totals.queued,
+      distance: totals.distance,
       log,
       progress: (index + 1) / result.steps.length,
     };

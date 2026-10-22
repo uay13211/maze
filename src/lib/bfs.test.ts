@@ -236,8 +236,8 @@ describe("solveBfs", () => {
     expectStepList(result, 0, 1);
   });
 
-  it("solves a 300 by 300 maze", () => {
-    const width = 300;
+  it("solves a 50 by 50 maze", () => {
+    const width = 50;
     const maze = generateMaze(width, width, 7);
     const end = width * width - 1;
     const result = solveBfs(maze, 0, end);
@@ -249,7 +249,7 @@ describe("solveBfs", () => {
       pathLength: result.path.length,
     });
     expect(queueSnapshot(result, 0).cells.length).toBeLessThanOrEqual(10);
-  }, 20_000);
+  });
 
   it("rejects a cell outside the maze", () => {
     const maze = grid(2, 2, [[0, 1]]);

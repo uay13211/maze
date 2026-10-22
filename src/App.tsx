@@ -1,4 +1,4 @@
-import { createMemo, createSignal } from "solid-js";
+import { createSignal } from "solid-js";
 import { Controls } from "./components/Controls";
 import { MazeGrid } from "./components/MazeGrid";
 import { StepView } from "./components/StepView";
@@ -7,6 +7,7 @@ import { generateMaze, type Maze } from "./lib/maze";
 import { freshSeed } from "./lib/random";
 import { DEFAULT_MAZE_SIZE, isMazeSize, type MazeSize } from "./lib/sizes";
 import { createPlayback } from "./state/createPlayback";
+import { createStepTotals } from "./state/createTotals";
 import { DEFAULT_SPEED, paceFor, type Speed } from "./state/pace";
 import "./App.css";
 
@@ -15,17 +16,6 @@ export const GRID_HEIGHT = DEFAULT_MAZE_SIZE;
 
 function makeMaze(size: MazeSize, previous?: number): Maze {
   return generateMaze(size, size, freshSeed(previous));
-}
-
-export function pathCellCount(result: SearchResult | null, stepIndex: number): number {
-  if (!result || stepIndex < 0) return 0;
-  let count = 0;
-  const traced = result.tracedAt;
-  for (let index = 0; index < traced.length; index += 1) {
-    const at = traced[index];
-    if (at !== -1 && at <= stepIndex) count += 1;
-  }
-  return count;
 }
 
 export function App() {
@@ -37,7 +27,7 @@ export function App() {
     () => search()?.steps.length ?? 0,
     () => paceFor(maze().width * maze().height, speed()),
   );
-  const pathCount = createMemo(() => pathCellCount(search(), playback.stepIndex()));
+  const totals = createStepTotals(search, playback.stepIndex);
 
   const play = () => {
     if (playback.status() === "running" || playback.status() === "paused") return;
@@ -82,11 +72,17 @@ export function App() {
         onSize={chooseSize}
         onSpeed={setSpeed}
       />
-      <MazeGrid maze={maze} search={search} stepIndex={playback.stepIndex} pathCount={pathCount} />
+      <MazeGrid
+        maze={maze}
+        search={search}
+        stepIndex={playback.stepIndex}
+        pathCount={() => totals().path}
+      />
       <StepView
         maze={maze}
         search={search}
         stepIndex={playback.stepIndex}
+        totals={totals}
         announce={() => paceFor(maze().width * maze().height, speed()).stepsPerTick === 1}
       />
     </div>

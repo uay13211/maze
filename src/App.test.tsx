@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { solveBfs } from "./lib/bfs";
 import { generateMaze } from "./lib/maze";
-import { cellPixelSize } from "./lib/paint";
+import { cellPixelSize, deviceScale } from "./lib/paint";
 import { LOG_LIMIT } from "./components/StepView";
 import { paceFor } from "./state/pace";
 
@@ -49,7 +49,9 @@ describe("App", () => {
     expect(view.getByTestId("status").textContent).toBe("Ready.");
     expect(maze().getAttribute("data-width")).toBe("30");
     expect(maze().getAttribute("data-height")).toBe("30");
-    expect(maze().width).toBe(30 * cellPixelSize(30));
+    expect(view.getByRole("option", { name: "50×50" })).toBeTruthy();
+    expect(view.queryByRole("option", { name: "300×300" })).toBeNull();
+    expect(maze().width).toBe(30 * cellPixelSize(30) * deviceScale(window.devicePixelRatio));
     expect(pathCount()).toBe(0);
   });
 
@@ -202,17 +204,51 @@ describe("App", () => {
     expect(pathCount()).toBe(0);
     expect(maze().getAttribute("data-width")).toBe("100");
     expect(maze().getAttribute("data-height")).toBe("100");
-    expect(maze().width).toBe(100 * cellPixelSize(100));
+    expect(maze().width).toBe(100 * cellPixelSize(100) * deviceScale(window.devicePixelRatio));
     expect(maze().getAttribute("data-seed")).not.toBe(seed);
     vi.advanceTimersByTime(1_000);
     expect(view.getByTestId("status").textContent).toBe("Ready.");
 
-    fireEvent.change(view.getByLabelText("Size"), { target: { value: "300" } });
-    expect(maze().getAttribute("data-width")).toBe("300");
-    expect(maze().getAttribute("data-height")).toBe("300");
-    expect(maze().width).toBe(300 * cellPixelSize(300));
+    fireEvent.change(view.getByLabelText("Size"), { target: { value: "50" } });
+    expect(maze().getAttribute("data-width")).toBe("50");
+    expect(maze().getAttribute("data-height")).toBe("50");
+    expect(maze().width).toBe(50 * cellPixelSize(50) * deviceScale(window.devicePixelRatio));
     expect(view.getByTestId("step-description").textContent).toBe("Press Play to start the search.");
     expect(view.getByTestId("queue").textContent).toBe("The queue is empty.");
     expect(document.querySelectorAll(".log li").length).toBe(0);
+
+    fireEvent.change(view.getByLabelText("Size"), { target: { value: "300" } });
+    expect(maze().getAttribute("data-width")).toBe("50");
+  });
+
+  it("starts a clean round with one timer after Reset", () => {
+    const view = render(() => <App />);
+    fireEvent.click(view.getByRole("button", { name: "Play" }));
+    vi.advanceTimersByTime(SLOW.intervalMs * 4);
+    fireEvent.click(view.getByRole("button", { name: "Reset" }));
+    fireEvent.click(view.getByRole("button", { name: "Play" }));
+    vi.advanceTimersByTime(SLOW.intervalMs);
+    expect(view.getByTestId("step-progress").textContent).toMatch(/^Step 2 of /);
+    expect(vi.getTimerCount()).toBe(1);
+  });
+
+  it("starts a clean round with one timer after a size change", () => {
+    const view = render(() => <App />);
+    fireEvent.click(view.getByRole("button", { name: "Play" }));
+    vi.advanceTimersByTime(SLOW.intervalMs * 4);
+    fireEvent.change(view.getByLabelText("Size"), { target: { value: "50" } });
+    fireEvent.click(view.getByRole("button", { name: "Play" }));
+    vi.advanceTimersByTime(paceFor(50 * 50, "slow").intervalMs);
+    expect(view.getByTestId("step-progress").textContent).toMatch(/^Step 2 of /);
+    expect(vi.getTimerCount()).toBe(1);
+  });
+
+  it("ignores a speed value that is not a choice", () => {
+    const view = render(() => <App />);
+    fireEvent.click(view.getByRole("button", { name: "Play" }));
+    fireEvent.change(view.getByLabelText("Speed"), { target: { value: "turbo" } });
+    expect(document.querySelector(".app")?.getAttribute("data-speed")).toBe("slow");
+    vi.advanceTimersByTime(SLOW.intervalMs);
+    expect(view.getByTestId("step-progress").textContent).toMatch(/^Step 2 of /);
   });
 });

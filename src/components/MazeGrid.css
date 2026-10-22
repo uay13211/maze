@@ -4,7 +4,7 @@
 
 .maze-canvas {
   display: block;
-  width: min(100%, 640px);
+  width: min(100%, var(--maze-css-width, 540px));
   height: auto;
   background: #fff;
   image-rendering: pixelated;

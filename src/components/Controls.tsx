@@ -1,6 +1,6 @@
 import type { Accessor } from "solid-js";
-import { MAZE_SIZES, type MazeSize } from "../lib/sizes";
-import { SPEEDS, type Speed } from "../state/pace";
+import { isMazeSize, MAZE_SIZES, type MazeSize } from "../lib/sizes";
+import { isSpeed, SPEEDS, type Speed } from "../state/pace";
 import type { PlaybackStatus } from "../state/createPlayback";
 import "./Controls.css";
 
@@ -39,7 +39,10 @@ export function Controls(props: {
         <select
           aria-label="Size"
           value={String(props.size())}
-          onChange={(event) => props.onSize(Number(event.currentTarget.value) as MazeSize)}
+          onChange={(event) => {
+            const next = Number(event.currentTarget.value);
+            if (isMazeSize(next)) props.onSize(next);
+          }}
         >
           {MAZE_SIZES.map((size) => (
             <option value={size}>{size}×{size}</option>
@@ -51,7 +54,10 @@ export function Controls(props: {
         <select
           aria-label="Speed"
           value={props.speed()}
-          onChange={(event) => props.onSpeed(event.currentTarget.value as Speed)}
+          onChange={(event) => {
+            const next = event.currentTarget.value;
+            if (isSpeed(next)) props.onSpeed(next);
+          }}
         >
           {SPEEDS.map((speed) => (
             <option value={speed}>{SPEED_LABEL[speed]}</option>
