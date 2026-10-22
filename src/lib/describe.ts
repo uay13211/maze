@@ -27,19 +27,31 @@ export function describeStep(step: Step, width: number): string {
   }
 }
 
-export function queueAtStep(steps: readonly Step[], stepIndex: number): readonly number[] {
-  for (let i = stepIndex; i >= 0; i -= 1) {
-    const step = steps[i];
-    if (
-      step.kind === "start" ||
-      step.kind === "visit" ||
-      step.kind === "enqueue" ||
-      step.kind === "found"
-    ) {
-      return step.queue;
-    }
+export const QUEUE_PREVIEW = 10;
+
+/**
+ * The queue at one step, in enqueue order.
+ * The cell list is capped. `total` is the full queue length.
+ * The scan stops at the first cell that joins after this step.
+ */
+export function queueSnapshot(
+  result: SearchResult,
+  stepIndex: number,
+  limit = QUEUE_PREVIEW,
+): { cells: number[]; total: number } {
+  const cells: number[] = [];
+  let total = 0;
+  const order = result.enqueuedOrder;
+  for (let i = 0; i < order.length; i += 1) {
+    const cell = order[i];
+    const enqueued = result.enqueuedAt[cell];
+    if (enqueued === -1 || enqueued > stepIndex) break;
+    const visited = result.visitedAt[cell];
+    if (visited !== -1 && visited <= stepIndex) continue;
+    total += 1;
+    if (cells.length < limit) cells.push(cell);
   }
-  return [];
+  return { cells, total };
 }
 
 export function distanceAtStep(steps: readonly Step[], stepIndex: number): number | null {
@@ -53,12 +65,10 @@ export function distanceAtStep(steps: readonly Step[], stepIndex: number): numbe
   return null;
 }
 
-const QUEUE_PREVIEW = 10;
-
-export function formatQueue(queue: readonly number[], width: number): string {
-  if (queue.length === 0) return "The queue is empty.";
-  const shown = queue.slice(0, QUEUE_PREVIEW).map((cell) => formatCell(cell, width));
-  const hidden = queue.length - shown.length;
+export function formatQueue(cells: readonly number[], total: number, width: number): string {
+  if (total <= 0 || cells.length === 0) return "The queue is empty.";
+  const shown = cells.map((cell) => formatCell(cell, width));
+  const hidden = total - cells.length;
   if (hidden > 0) return `${shown.join(", ")}, and ${hidden} more.`;
   return `${shown.join(", ")}.`;
 }

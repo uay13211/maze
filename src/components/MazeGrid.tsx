@@ -1,62 +1,62 @@
-import { Index, createMemo } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 import type { Accessor } from "solid-js";
-import { cellPhase } from "../lib/cellPhase";
-import { WALL_E, WALL_N, WALL_S, WALL_W, type Maze } from "../lib/maze";
 import type { SearchResult } from "../lib/bfs";
+import type { Maze } from "../lib/maze";
+import { cellPixelSize, paintMaze } from "../lib/paint";
 import "./MazeGrid.css";
 
 export function MazeGrid(props: {
   maze: Accessor<Maze>;
   search: Accessor<SearchResult | null>;
   stepIndex: Accessor<number>;
+  pathCount: Accessor<number>;
 }) {
-  const indexes = createMemo(() => {
+  const [canvas, setCanvas] = createSignal<HTMLCanvasElement>();
+  let pixels: Uint8ClampedArray | undefined;
+  let bufferKey = "";
+  let canvasSupported = true;
+
+  createEffect(() => {
+    const el = canvas();
+    if (!el) return;
     const maze = props.maze();
-    return Array.from({ length: maze.width * maze.height }, (_, index) => index);
+    const search = props.search();
+    const stepIndex = props.stepIndex();
+    const cell = cellPixelSize(Math.max(maze.width, maze.height));
+    const width = maze.width * cell;
+    const height = maze.height * cell;
+    const key = `${width}x${height}`;
+    if (!pixels || bufferKey !== key) {
+      pixels = new Uint8ClampedArray(width * height * 4);
+      bufferKey = key;
+    }
+    paintMaze(pixels, maze, search, stepIndex, cell);
+    if (el.width !== width) el.width = width;
+    if (el.height !== height) el.height = height;
+    if (!canvasSupported) return;
+    const context = el.getContext("2d", { alpha: false });
+    if (!context) {
+      canvasSupported = false;
+      return;
+    }
+    const image = context.createImageData(width, height);
+    image.data.set(pixels);
+    context.putImageData(image, 0, 0);
   });
 
   return (
     <div class="maze-wrap">
-      <div
+      <canvas
         id="maze"
-        class="maze"
+        ref={setCanvas}
+        class="maze-canvas"
         role="img"
-        aria-label="Maze. The start cell is the top-left corner. The end cell is the bottom-right corner."
+        aria-label={`Maze, ${props.maze().width} by ${props.maze().height}. The start cell is the top-left corner. The end cell is the bottom-right corner.`}
         data-seed={props.maze().seed}
-        style={{ "--cols": String(props.maze().width) }}
-      >
-        <Index each={indexes()}>
-          {(cell) => {
-            const phase = createMemo(() =>
-              cellPhase(cell(), props.stepIndex(), props.search()),
-            );
-            return (
-              <div
-                class="cell"
-                classList={{
-                  "wall-n": (props.maze().walls[cell()] & WALL_N) !== 0,
-                  "wall-w": (props.maze().walls[cell()] & WALL_W) !== 0,
-                  "wall-e":
-                    cell() % props.maze().width === props.maze().width - 1 &&
-                    (props.maze().walls[cell()] & WALL_E) !== 0,
-                  "wall-s":
-                    Math.floor(cell() / props.maze().width) === props.maze().height - 1 &&
-                    (props.maze().walls[cell()] & WALL_S) !== 0,
-                  start: cell() === 0,
-                  end: cell() === props.maze().width * props.maze().height - 1,
-                  empty: phase() === "empty",
-                  queued: phase() === "queued",
-                  visited: phase() === "visited",
-                  current: phase() === "current",
-                  path: phase() === "path",
-                }}
-                data-index={cell()}
-                data-phase={phase()}
-              />
-            );
-          }}
-        </Index>
-      </div>
+        data-width={props.maze().width}
+        data-height={props.maze().height}
+        data-path-count={props.pathCount()}
+      />
       <ul class="legend">
         <li><span class="swatch start" /> Start</li>
         <li><span class="swatch end" /> End</li>

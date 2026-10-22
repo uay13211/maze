@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { queueSnapshot } from "./describe";
 import { solveBfs, type SearchResult, type Step } from "./bfs";
 import { WALL_ALL, WALL_E, WALL_N, WALL_S, WALL_W, generateMaze, type Maze } from "./maze";
 
@@ -126,11 +127,14 @@ function expectStepList(result: SearchResult, start: number, end: number) {
     }
   }
 
-  const queues = steps.filter(
-    (step): step is Extract<Step, { queue: number[] }> =>
-      step.kind === "start" || step.kind === "visit" || step.kind === "enqueue" || step.kind === "found",
-  );
-  if (queues.length > 1) expect(queues[0]?.queue).not.toBe(queues[1]?.queue);
+  let orderIndex = 0;
+  for (const step of steps) {
+    if (step.kind === "start" || step.kind === "enqueue") {
+      expect(result.enqueuedOrder[orderIndex]).toBe(step.cell);
+      orderIndex += 1;
+    }
+  }
+  expect(orderIndex).toBe(result.enqueuedOrder.length);
 }
 
 describe("solveBfs", () => {
@@ -155,17 +159,14 @@ describe("solveBfs", () => {
       "trace",
       "done",
     ]);
-    expect(result.steps[0]).toEqual({ kind: "start", cell: 0, queue: [0] });
-    expect(result.steps[1]).toEqual({ kind: "visit", cell: 0, distance: 0, queue: [] });
-    expect(result.steps[2]).toEqual({
-      kind: "enqueue",
-      cell: 1,
-      from: 0,
-      distance: 1,
-      queue: [1],
-    });
-    expect(result.steps[6]).toEqual({ kind: "found", cell: 2, distance: 2, queue: [] });
+    expect(result.steps[0]).toEqual({ kind: "start", cell: 0 });
+    expect(result.steps[1]).toEqual({ kind: "visit", cell: 0, distance: 0 });
+    expect(result.steps[2]).toEqual({ kind: "enqueue", cell: 1, from: 0, distance: 1 });
+    expect(result.steps[6]).toEqual({ kind: "found", cell: 2, distance: 2 });
     expect(result.steps[10]).toEqual({ kind: "done", pathLength: 3 });
+    expect(queueSnapshot(result, 0)).toEqual({ cells: [0], total: 1 });
+    expect(queueSnapshot(result, 1)).toEqual({ cells: [], total: 0 });
+    expect(queueSnapshot(result, 2)).toEqual({ cells: [1], total: 1 });
     expectStepList(result, 0, 2);
   });
 
@@ -208,6 +209,7 @@ describe("solveBfs", () => {
       [8, 3, 11],
       [12, 12, 99],
       [30, 30, 2026],
+      [100, 100, 5],
     ];
     for (const [width, height, seed] of samples) {
       const maze = generateMaze(width, height, seed);
@@ -233,6 +235,21 @@ describe("solveBfs", () => {
     expect(result.steps.map((step) => step.kind)).toEqual(["start", "visit", "done"]);
     expectStepList(result, 0, 1);
   });
+
+  it("solves a 300 by 300 maze", () => {
+    const width = 300;
+    const maze = generateMaze(width, width, 7);
+    const end = width * width - 1;
+    const result = solveBfs(maze, 0, end);
+    expect(result.path[0]).toBe(0);
+    expect(result.path[result.path.length - 1]).toBe(end);
+    expect(result.distance).toBe(result.path.length - 1);
+    expect(result.steps[result.steps.length - 1]).toEqual({
+      kind: "done",
+      pathLength: result.path.length,
+    });
+    expect(queueSnapshot(result, 0).cells.length).toBeLessThanOrEqual(10);
+  }, 20_000);
 
   it("rejects a cell outside the maze", () => {
     const maze = grid(2, 2, [[0, 1]]);

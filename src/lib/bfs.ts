@@ -1,10 +1,10 @@
 import { cellNeighbors, type Maze } from "./maze";
 
 export type Step =
-  | { kind: "start"; cell: number; queue: number[] }
-  | { kind: "visit"; cell: number; distance: number; queue: number[] }
-  | { kind: "enqueue"; cell: number; from: number; distance: number; queue: number[] }
-  | { kind: "found"; cell: number; distance: number; queue: number[] }
+  | { kind: "start"; cell: number }
+  | { kind: "visit"; cell: number; distance: number }
+  | { kind: "enqueue"; cell: number; from: number; distance: number }
+  | { kind: "found"; cell: number; distance: number }
   | { kind: "trace"; cell: number }
   | { kind: "done"; pathLength: number };
 
@@ -14,6 +14,8 @@ export type SearchResult = {
   /** Number of steps between the cells. -1 when no path exists. */
   distance: number;
   steps: Step[];
+  /** Cells in the order they joined the queue. */
+  enqueuedOrder: Int32Array;
   /** Step index when the cell joined the queue. -1 when it did not. */
   enqueuedAt: Int32Array;
   /** Step index when the search visited the cell. -1 when it did not. */
@@ -41,21 +43,27 @@ export function solveBfs(maze: Maze, start: number, end: number): SearchResult {
   const enqueuedAt = new Int32Array(count);
   const visitedAt = new Int32Array(count);
   const tracedAt = new Int32Array(count);
+  const enqueuedOrder = new Int32Array(count);
   enqueuedAt.fill(-1);
   visitedAt.fill(-1);
   tracedAt.fill(-1);
+  let enqueuedCount = 0;
 
   const steps: Step[] = [];
   const queue: number[] = [];
   let head = 0;
 
-  const snapshot = (): number[] => queue.slice(head);
+  const remember = (cell: number) => {
+    enqueuedOrder[enqueuedCount] = cell;
+    enqueuedCount += 1;
+    enqueuedAt[cell] = steps.length;
+  };
 
   seen[start] = 1;
   distance[start] = 0;
   queue.push(start);
-  enqueuedAt[start] = steps.length;
-  steps.push({ kind: "start", cell: start, queue: snapshot() });
+  remember(start);
+  steps.push({ kind: "start", cell: start });
 
   let found = false;
 
@@ -64,10 +72,10 @@ export function solveBfs(maze: Maze, start: number, end: number): SearchResult {
     head += 1;
     const dist = distance[cell];
     visitedAt[cell] = steps.length;
-    steps.push({ kind: "visit", cell, distance: dist, queue: snapshot() });
+    steps.push({ kind: "visit", cell, distance: dist });
 
     if (cell === end) {
-      steps.push({ kind: "found", cell, distance: dist, queue: snapshot() });
+      steps.push({ kind: "found", cell, distance: dist });
       found = true;
       break;
     }
@@ -78,20 +86,21 @@ export function solveBfs(maze: Maze, start: number, end: number): SearchResult {
       parent[next] = cell;
       distance[next] = dist + 1;
       queue.push(next);
-      enqueuedAt[next] = steps.length;
+      remember(next);
       steps.push({
         kind: "enqueue",
         cell: next,
         from: cell,
         distance: dist + 1,
-        queue: snapshot(),
       });
     }
   }
 
+  const order = enqueuedOrder.subarray(0, enqueuedCount);
+
   if (!found) {
     steps.push({ kind: "done", pathLength: 0 });
-    return { path: [], distance: -1, steps, enqueuedAt, visitedAt, tracedAt };
+    return { path: [], distance: -1, steps, enqueuedOrder: order, enqueuedAt, visitedAt, tracedAt };
   }
 
   const reversed: number[] = [];
@@ -115,6 +124,7 @@ export function solveBfs(maze: Maze, start: number, end: number): SearchResult {
     path,
     distance: distance[end],
     steps,
+    enqueuedOrder: order,
     enqueuedAt,
     visitedAt,
     tracedAt,

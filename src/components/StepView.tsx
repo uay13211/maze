@@ -7,17 +7,18 @@ import {
   distanceAtStep,
   formatCount,
   formatQueue,
-  queueAtStep,
+  queueSnapshot,
 } from "../lib/describe";
 import type { Maze } from "../lib/maze";
 import "./StepView.css";
 
-const LOG_LIMIT = 12;
+export const LOG_LIMIT = 12;
 
 export function StepView(props: {
   maze: Accessor<Maze>;
   search: Accessor<SearchResult | null>;
   stepIndex: Accessor<number>;
+  announce: Accessor<boolean>;
 }) {
   const view = createMemo(() => {
     const result = props.search();
@@ -38,7 +39,7 @@ export function StepView(props: {
 
     const index = Math.min(Math.max(props.stepIndex(), 0), result.steps.length - 1);
     const step = result.steps[index];
-    const queue = queueAtStep(result.steps, index);
+    const snapshot = queueSnapshot(result, index);
     const distance = distanceAtStep(result.steps, index) ?? 0;
     const logStart = Math.max(0, index - (LOG_LIMIT - 1));
     const log: { key: string; text: string }[] = [];
@@ -51,9 +52,9 @@ export function StepView(props: {
       current: index + 1,
       total: result.steps.length,
       description: describeStep(step, width),
-      queue: formatQueue(queue, width),
+      queue: formatQueue(snapshot.cells, snapshot.total, width),
       visited: countVisited(result, index),
-      queued: queue.length,
+      queued: snapshot.total,
       distance,
       log,
       progress: (index + 1) / result.steps.length,
@@ -76,7 +77,11 @@ export function StepView(props: {
       >
         <div style={{ width: `${view().progress * 100}%` }} />
       </div>
-      <p class="description" data-testid="step-description" aria-live="polite">
+      <p
+        class="description"
+        data-testid="step-description"
+        aria-live={props.announce() ? "polite" : "off"}
+      >
         {view().description}
       </p>
       <h3>Queue</h3>
