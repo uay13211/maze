@@ -1,0 +1,38 @@
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.controls button {
+  font: inherit;
+  min-width: 96px;
+  padding: 8px 16px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fffdf8;
+  cursor: pointer;
+}
+
+.controls button.reset {
+  background: transparent;
+  color: var(--ink);
+}
+
+.controls button:disabled {
+  background: #b7b0a4;
+  border-color: #b7b0a4;
+  color: #fffdf8;
+  cursor: not-allowed;
+}
+
+.controls button:focus-visible {
+  outline: 3px solid var(--path);
+  outline-offset: 2px;
+}
+
+.controls .status {
+  margin: 0;
+}

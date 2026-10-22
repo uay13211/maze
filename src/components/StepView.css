@@ -1,0 +1,57 @@
+.step-view {
+  margin-top: 20px;
+  max-width: 760px;
+  padding: 16px;
+  border: 1px solid #d9d1c3;
+  background: #fffdf8;
+}
+
+.step-view h2,
+.step-view h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.step-view h3 {
+  margin-top: 16px;
+}
+
+.step-view p {
+  margin: 0 0 8px;
+}
+
+.progress {
+  height: 8px;
+  background: #e6e0d4;
+  margin-bottom: 12px;
+}
+
+.progress > div {
+  height: 100%;
+  background: var(--path);
+}
+
+.description {
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.log {
+  max-height: 220px;
+  overflow: auto;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.log li + li {
+  margin-top: 4px;
+}

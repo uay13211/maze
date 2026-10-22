@@ -1,0 +1,50 @@
+:root {
+  --cell: 20px;
+  --ink: #241e18;
+  --paper: #f3efe6;
+  --queued: #f3dc8a;
+  --visited: #b9d7f2;
+  --current: #ef8f2f;
+  --path: #1565c0;
+  --start: #1b7a38;
+  --end: #c62828;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+  line-height: 1.4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  letter-spacing: 0.04em;
+}
+
+header p {
+  margin: 0;
+  max-width: 40rem;
+}
+
+@media (max-width: 700px) {
+  :root {
+    --cell: 12px;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+}

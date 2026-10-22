@@ -1,0 +1,119 @@
+.maze-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.maze {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell));
+  width: max-content;
+  background: #fff;
+  line-height: 0;
+}
+
+.cell {
+  box-sizing: border-box;
+  width: var(--cell);
+  height: var(--cell);
+  position: relative;
+  background: #fff;
+}
+
+.cell.queued {
+  background: var(--queued);
+}
+
+.cell.visited {
+  background: var(--visited);
+}
+
+.cell.current {
+  background: var(--current);
+}
+
+.cell.path {
+  background: var(--path);
+}
+
+.wall-n {
+  border-top: 2px solid var(--ink);
+}
+
+.wall-w {
+  border-left: 2px solid var(--ink);
+}
+
+.wall-e {
+  border-right: 2px solid var(--ink);
+}
+
+.wall-s {
+  border-bottom: 2px solid var(--ink);
+}
+
+.cell.start::after,
+.cell.end::after {
+  content: "";
+  position: absolute;
+  width: 42%;
+  height: 42%;
+  left: 29%;
+  top: 29%;
+  border-radius: 50%;
+}
+
+.cell.start::after {
+  background: var(--start);
+}
+
+.cell.end::after {
+  background: var(--end);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--ink);
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.swatch.start {
+  background: var(--start);
+}
+
+.swatch.end {
+  background: var(--end);
+}
+
+.swatch.current {
+  background: var(--current);
+}
+
+.swatch.queued {
+  background: var(--queued);
+}
+
+.swatch.visited {
+  background: var(--visited);
+}
+
+.swatch.path {
+  background: var(--path);
+}

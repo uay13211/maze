@@ -1,68 +1,34 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Maze
 
-## Available Scripts
+This program builds a maze on a 30 by 30 grid.
+The maze has one path between any two cells.
+Breadth-first search finds the shortest path from the top-left cell to the bottom-right cell.
+The page shows each step of that search.
 
-In the project directory, you can run:
+You need Node.js 20 or later.
 
-### `npm start`
+## Run the program
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+1. Run `npm install`.
+2. Run `npm run dev`.
+3. Open the local address that Vite prints.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+You can also run `npm start`.
 
-### `npm test`
+## Use the program
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Click Play. The search starts.
+2. Read the step view under the maze. The view shows the step number, a description, the queue, and the visited-cell count.
+3. Wait for the end of the search. The page shows the shortest path.
+4. Click Reset. The program stops the search and builds a new maze.
 
-### `npm run build`
+## Build the program
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Run `npm install`.
+2. Run `npm run build`.
+3. The program writes the files to the `dist` folder.
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+## Test the program
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+1. Run `npm install`.
+2. Run `npm test`.
