@@ -1,0 +1,59 @@
+.maze-wrap {
+  width: 100%;
+}
+
+.maze-canvas {
+  display: block;
+  width: min(100%, var(--maze-css-width, 540px));
+  height: auto;
+  background: #fff;
+  image-rendering: pixelated;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--ink);
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.swatch.start {
+  background: var(--start);
+}
+
+.swatch.end {
+  background: var(--end);
+}
+
+.swatch.current {
+  background: var(--current);
+}
+
+.swatch.queued {
+  background: var(--queued);
+}
+
+.swatch.visited {
+  background: var(--visited);
+}
+
+.swatch.path {
+  background: var(--path);
+}
