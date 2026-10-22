@@ -80,7 +80,8 @@ describe("App", () => {
     expect(view.getByTestId("step-progress").textContent).toMatch(/^Step 2 of /);
 
     const seed = maze().getAttribute("data-seed");
-    finishPlayback();
+    fireEvent.change(view.getByLabelText("Speed"), { target: { value: "fast" } });
+    finishPlayback(900, "fast");
 
     expect(play.disabled).toBe(false);
     expect(view.getByTestId("status").textContent).toBe("Search is complete.");
@@ -150,12 +151,14 @@ describe("App", () => {
     const view = render(() => <App />);
     const play = view.getByRole("button", { name: "Play" });
     fireEvent.click(play);
-    finishPlayback();
+    fireEvent.change(view.getByLabelText("Speed"), { target: { value: "fast" } });
+    finishPlayback(900, "fast");
     const firstSeed = maze().getAttribute("data-seed");
     const firstPath = pathCount();
     expect(firstPath).toBeGreaterThan(1);
 
     fireEvent.click(view.getByRole("button", { name: "Reset" }));
+    fireEvent.change(view.getByLabelText("Speed"), { target: { value: "slow" } });
     expect(pathCount()).toBe(0);
     expect(maze().getAttribute("data-seed")).not.toBe(firstSeed);
 
@@ -168,7 +171,8 @@ describe("App", () => {
     expect(pathCount()).toBe(0);
 
     const secondSeed = maze().getAttribute("data-seed");
-    finishPlayback();
+    fireEvent.change(view.getByLabelText("Speed"), { target: { value: "fast" } });
+    finishPlayback(900, "fast");
     const result = solveBfs(generateMaze(30, 30, Number(secondSeed)), 0, 30 * 30 - 1);
     expect(pathCount()).toBe(result.path.length);
     expect(view.getByTestId("step-description").textContent).toBe(
